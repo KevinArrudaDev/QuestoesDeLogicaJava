@@ -1,0 +1,247 @@
+achei este meu codgio bem legal e clean, mas ha um problema
+
+caso o usuario digitar algo errado o programa inicia de maneira inteira, tem como botar num loop?
+
+/* 3) Crie um programa que leia o nome e o salário de um funcionário, mostrando no 
+final uma mensagem. 
+Ex: 
+Nome do Funcionário: Maria do Carmo 
+Salário: 1850,45 
+O funcionário Maria do Carmo tem um salário de R$1850,45 em Junho. */
+
+import java.util.Scanner;
+import java.util.InputMismatchException;
+import java.text.DecimalFormat;
+
+public class Q03NomeSalario {
+    public static void main(String[] args) {
+        
+        Scanner sc = new Scanner(System.in);
+        DecimalFormat df = new DecimalFormat("0.00");
+        
+        System.out.println("Digite o seu nome: ");
+        String nomeDigitado = sc.nextLine();
+        
+        nomeDigitado = nomeDigitado.trim().replaceAll("\\s+", " ");
+        
+        if (nomeDigitado.isEmpty() || !nomeDigitado.matches("^[\\p{L} .'-]+$") || nomeDigitado.length() > 80) {
+            System.out.println("Nome inválido, tente novamente!");
+            return;
+        }
+        
+        double salarioDigitado = 0;
+        
+        try {
+            
+            System.out.println("Digite o seu salário: ");
+            salarioDigitado = sc.nextDouble();
+            
+            if (salarioDigitado <= 0) {
+                System.out.println("Digite apenas números positivos e diferentes de 0!");
+                return;
+            } 
+            
+        } catch (InputMismatchException e) {
+            System.out.println("Apenas números são válidos!");
+            return;
+        }
+        
+        System.out.println("Nome do Funcionário: " + nomeDigitado);
+        System.out.println("Salário: " + df.format(salarioDigitado));
+        System.out.println("O funcionário " + nomeDigitado + " tem um salário de R$" + df.format(salarioDigitado) + " em Junho.");
+        
+        
+        sc.close();
+    }
+}
+
+Sim — do jeito que você fez, o return encerra o programa inteiro quando há erro. Para evitar isso, o caminho é usar um loop (while ou do-while) para repetir a entrada até o usuário digitar corretamente.
+
+A ideia é simples:
+
+enquanto o valor for inválido → continua pedindo
+quando for válido → sai do loop
+
+Vou adaptar seu código mantendo ele limpo 👇
+
+import java.util.Scanner;
+import java.util.InputMismatchException;
+import java.text.DecimalFormat;
+
+public class Q03NomeSalario {
+    public static void main(String[] args) {
+        
+        Scanner sc = new Scanner(System.in);
+        DecimalFormat df = new DecimalFormat("0.00");
+        
+        String nomeDigitado;
+
+        // LOOP PARA O NOME
+        while (true) {
+            System.out.println("Digite o seu nome: ");
+            nomeDigitado = sc.nextLine();
+            
+            nomeDigitado = nomeDigitado.trim().replaceAll("\\s+", " ");
+            
+            if (!nomeDigitado.isEmpty() && 
+                nomeDigitado.matches("^[\\p{L} .'-]+$") && 
+                nomeDigitado.length() <= 80) {
+                break; // sai do loop se estiver válido
+            } else {
+                System.out.println("Nome inválido, tente novamente!");
+            }
+        }
+        
+        double salarioDigitado = 0;
+
+        // LOOP PARA O SALÁRIO
+        while (true) {
+            try {
+                System.out.println("Digite o seu salário: ");
+                salarioDigitado = sc.nextDouble();
+                
+                if (salarioDigitado > 0) {
+                    break; // válido → sai do loop
+                } else {
+                    System.out.println("Digite apenas números positivos e diferentes de 0!");
+                }
+                
+            } catch (InputMismatchException e) {
+                System.out.println("Apenas números são válidos!");
+                sc.nextLine(); // limpa o buffer
+            }
+        }
+        
+        System.out.println("Nome do Funcionário: " + nomeDigitado);
+        System.out.println("Salário: " + df.format(salarioDigitado));
+        System.out.println("O funcionário " + nomeDigitado + 
+                           " tem um salário de R$" + df.format(salarioDigitado) + 
+                           " em Junho.");
+        
+        sc.close();
+    }
+}
+O que mudou (resumão):
+Tirei os return e coloquei while(true)
+Usei break quando o dado fica válido
+No catch, adicionei sc.nextLine() pra limpar o buffer (isso é essencial, senão trava no erro)
+
+Se quiser deixar ainda mais organizado, dá pra separar em métodos tipo lerNome() e lerSalario(). Quer ver essa versão também?
+
+pode me explciar o racioconio?
+
+Claro — o mais importante aqui não é o código, é o modelo mental que você usa. Vamos direto ao raciocínio 👇
+
+🔴 Problema do seu código original
+
+Você fez isso:
+
+if (erro) {
+    System.out.println("erro");
+    return;
+}
+
+O return mata o programa inteiro.
+Ou seja: deu erro → acabou tudo.
+
+Mas o comportamento que você quer é:
+
+“Deu erro → pede de novo até acertar”
+
+🧠 Mudança de mentalidade
+
+Em vez de pensar:
+
+“Se estiver errado, encerro”
+
+Você passa a pensar:
+
+“Enquanto estiver errado, continuo perguntando”
+
+Essa troca muda tudo.
+
+🔁 Como o loop resolve isso
+
+O while(true) cria um ciclo infinito:
+
+while (true) {
+    // pede dado
+    // valida
+}
+
+Agora você controla a saída com:
+
+break;
+🧩 Estrutura mental do loop
+
+Pensa assim (quase um algoritmo em português):
+
+repita para sempre:
+    peça o dado
+    se for válido:
+        pare o loop
+    senão:
+        mostre erro e repita
+🧾 Aplicando ao nome
+while (true) {
+    pede nome
+    
+    if (nome válido) {
+        break; // sai do loop
+    } else {
+        mostra erro
+    }
+}
+
+👉 Aqui o break substitui o return
+👉 Só sai quando estiver certo
+
+💰 Aplicando ao salário (com erro de digitação)
+
+Aqui tem um detalhe extra: o usuário pode digitar texto ao invés de número
+
+while (true) {
+    try {
+        pede salário
+        
+        if (salário válido) {
+            break;
+        } else {
+            erro
+        }
+        
+    } catch (...) {
+        erro
+        limpar entrada
+    }
+}
+⚠️ Esse detalhe é MUITO importante
+sc.nextLine();
+
+Sem isso, o programa entra em loop infinito quando o usuário digita letra.
+
+Por quê?
+
+O erro fica “preso” no buffer
+O Scanner tenta ler de novo e falha de novo
+Loop infinito de erro 💀
+🧠 Resumo do raciocínio
+❌ return → encerra tudo (não serve aqui)
+✅ while(true) → mantém o programa rodando
+✅ break → sai só quando estiver correto
+✅ try/catch → protege contra entrada inválida
+✅ nextLine() → limpa erro do Scanner
+🧩 Forma mais profissional de pensar
+
+Você basicamente implementou isso:
+
+Validação com repetição até sucesso (input validation loop)
+
+Isso é um padrão MUITO usado em programação.
+
+Se quiser evoluir mais, o próximo passo seria:
+
+separar isso em funções (lerNome(), lerSalario())
+ou usar do-while (fica ainda mais semântico)
+
+Se quiser, posso te mostrar a versão “nível profissional” desse mesmo código.
